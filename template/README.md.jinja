@@ -1,4 +1,15 @@
 # {{ project_name }}
+{%- if project_type == 'lib' %}
+
+[![Latest Version](https://img.shields.io/pypi/v/{{ project_name }}.svg)](https://pypi.python.org/pypi/{{ project_name }})
+[![Python Supported Versions](https://img.shields.io/pypi/pyversions/{{ project_name }}.svg)](https://pypi.python.org/pypi/{{ project_name }})
+[![MyPy Strict](https://img.shields.io/badge/mypy-strict-blue)](https://mypy.readthedocs.io/en/stable/getting_started.html#strict-mode-and-configuration)
+{%- if codecov %}
+[![Test Coverage](https://codecov.io/gh/{{ github_repository }}/branch/main/graph/badge.svg)](https://codecov.io/gh/{{ github_repository }})
+{%- endif %}
+[![Downloads](https://img.shields.io/pypi/dm/{{ project_name }}.svg)](https://pypistats.org/packages/{{ project_name }})
+[![GitHub stars](https://img.shields.io/github/stars/{{ github_repository }})](https://github.com/{{ github_repository }}/stargazers)
+{%- endif %}
 
 {{ description }}
 
