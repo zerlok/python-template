@@ -63,14 +63,14 @@ copyright_year:
 # Raising the newest version here is how libs start testing a new Python release.
 known_python_versions:
   type: yaml
-  default: ["3.9", 3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
+  default: ["3.10", "3.11", "3.12", "3.13", "3.14"]
   when: false
 
 python_version:
   type: str
   help: "{{ 'Minimum supported Python version' if project_type == 'lib' else 'Python version' }}"
   choices: "{{ known_python_versions | to_yaml }}"
-  default: "3.15"
+  default: "{{ known_python_versions[0] if project_type == 'lib' else known_python_versions[-1] }}"
 
 supported_python_versions:
   type: yaml

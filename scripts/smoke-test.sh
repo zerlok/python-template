@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Generates an app and a lib from the working tree and runs acceptance checks 1-3 on each.
-# Usage: scripts/smoke-test.sh [output-dir]   (default: a fresh temporary directory)
+# Usage: [PYTHON_VERSION=3.X] scripts/smoke-test.sh [output-dir]
+#   output-dir      default: a fresh temporary directory
+#   PYTHON_VERSION  overrides the template's default python_version, for machines that lack it
 set -euo pipefail
 
 TEMPLATE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -62,6 +64,7 @@ smoke() {
     --data author_name="Smoke Test" \
     --data author_email="smoke@example.com" \
     --data github_repository="example/$name" \
+    ${PYTHON_VERSION:+--data python_version="$PYTHON_VERSION"} \
     . "$project")
 
   step "[$project_type] environment"

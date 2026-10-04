@@ -68,3 +68,6 @@ The file watchers (ruff format and ruff fix on save) require the File Watchers p
 poetry install              # installs Copier into this repo's .venv
 scripts/smoke-test.sh       # generates an app and a lib from the working tree and checks them
 ```
+
+The smoke test uses the template's default Python versions (the newest for an app, the oldest for a lib). On a machine
+that lacks them, override with `PYTHON_VERSION=3.X scripts/smoke-test.sh`.
