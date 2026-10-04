@@ -1,0 +1,21 @@
+# {{ project_name }}
+
+{{ description }}
+
+## Development
+
+```bash
+poetry install
+poetry run ruff check
+poetry run ruff format --check
+poetry run mypy
+poetry run pytest
+```
+{%- if project_type == 'lib' %}
+
+Run the checks on every supported Python version with nox:
+
+```bash
+poetry run nox
+```
+{%- endif %}

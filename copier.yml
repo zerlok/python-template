@@ -1,0 +1,102 @@
+_min_copier_version: "9.6.0"  # first release with `_copier_operation`
+_subdirectory: template
+_answers_file: .copier-answers.yml
+
+# The README diverges per project immediately, so updates must not overwrite it.
+_skip_if_exists:
+  - README.md
+
+_tasks:
+  - command: git init
+    when: "{{ _copier_operation == 'copy' }}"
+  - poetry env use python{{ python_version }}
+  - poetry install
+
+_message_after_copy: |
+  Project {{ project_name }} is ready.
+  {%- if project_type == 'lib' and codecov %}
+
+  Add the CODECOV_TOKEN secret (from https://app.codecov.io/gh/{{ github_repository }}) for CI coverage uploads:
+  https://github.com/{{ github_repository }}/settings/secrets/actions
+  {%- endif %}
+
+project_type:
+  type: str
+  help: App (not a package) or lib (typed PyPI package tested across Python versions)?
+  choices:
+    - app
+    - lib
+  default: app
+
+project_name:
+  type: str
+  help: Project name (directory and PyCharm module name)
+  validator: >-
+    {% if not (project_name | regex_search('^[a-z0-9][a-z0-9_-]*$')) %}
+    Use lowercase letters, digits, "-" and "_", starting with a letter or digit.
+    {% endif %}
+
+package_name:
+  type: str
+  default: "{{ project_name | replace('-', '_') }}"
+  when: false
+
+description:
+  type: str
+  help: One-line project description
+  default: ""
+
+author_name:
+  type: str
+  help: Author name
+
+author_email:
+  type: str
+  help: Author email
+
+# Asked (not computed) so the year is recorded in the answers file and stays fixed across updates.
+copyright_year:
+  type: str
+  help: Copyright year
+  default: "{{ '%Y' | strftime }}"
+
+# Raising the newest version here is how libs start testing a new Python release.
+known_python_versions:
+  type: yaml
+  default: ["3.9", 3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
+  when: false
+
+python_version:
+  type: str
+  help: "{{ 'Minimum supported Python version' if project_type == 'lib' else 'Python version' }}"
+  choices: "{{ known_python_versions | to_yaml }}"
+  default: "3.15"
+
+supported_python_versions:
+  type: yaml
+  default: "{{ known_python_versions[known_python_versions.index(python_version):] | to_json }}"
+  when: false
+
+license:
+  type: str
+  help: License
+  choices:
+    - MIT
+    - Apache-2.0
+    - Proprietary
+  default: MIT
+
+github_repository:
+  type: str
+  help: GitHub repository (owner/name)
+  when: "{{ project_type == 'lib' }}"
+  validator: >-
+    {% if not (github_repository | regex_search('^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$')) %}
+    Use the owner/name form, e.g. octocat/{{ project_name }}.
+    {% endif %}
+
+codecov:
+  type: bool
+  help: Upload coverage to Codecov from CI? (needs a CODECOV_TOKEN repository secret)
+  when: "{{ project_type == 'lib' }}"
+  default: false

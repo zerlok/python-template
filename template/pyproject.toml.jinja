@@ -1,0 +1,140 @@
+[project]
+name = "{{ project_name }}"
+{%- if project_type == 'lib' %}
+version = "0.1.0"
+{%- endif %}
+description = "{{ description }}"
+authors = [{ name = "{{ author_name }}", email = "{{ author_email }}" }]
+license = "{{ 'LicenseRef-Proprietary' if license == 'Proprietary' else license }}"
+readme = "README.md"
+requires-python = ">={{ python_version }}"
+dependencies = []
+{%- if project_type == 'lib' %}
+keywords = ["python"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/{{ github_repository }}"
+Issues = "https://github.com/{{ github_repository }}/issues"
+{%- endif %}
+
+[tool.poetry]
+{%- if project_type == 'lib' %}
+packages = [{ include = "{{ package_name }}", from = "src" }]
+{%- else %}
+package-mode = false
+{%- endif %}
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^2"
+pytest = "^9"
+pytest-cov = "^7"
+ruff = ">=0.16,<1"
+{%- if project_type == 'lib' %}
+nox = ">=2026.8.17"
+
+[build-system]
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"
+{%- endif %}
+
+
+[tool.ruff]
+target-version = "py{{ python_version | replace('.', '') }}"
+include = ["src/**/*.py", "tests/**/*.py"]
+line-length = 120
+output-format = "pylint"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN", # because we use mypy
+    "D", # TODO: add docstrings to public code
+    "FA", # TODO: consider should we use __annotations__
+    "TD", # no task tracking
+    "FIX", # TODO: consider enable it against new code on pull requests
+    "CPY", # the license lives in LICENSE, not in per-file headers
+    "COM812", # because ruff format suggests to skip it
+    "ISC001", # because ruff format suggests to skip it
+    "RET503", # because we use mypy & ruff doesn't understand `assert_never`
+    "RET505", # clashes with mypy exhaustiveness check
+    "S101", # allow asserts for tests checks and mypy help
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "PLR0913", # test functions can use a lots of arguments and fixtures
+    "ARG001", # test functions can use fixtures with side effects
+    "ARG002", # test methods can use fixtures with side effects
+]
+
+
+[tool.mypy]
+mypy_path = "src"
+files = ["src", "tests"]
+strict = true
+disallow_any_unimported = true
+disallow_any_expr = true
+disallow_any_decorated = true
+disallow_any_explicit = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_return_any = true
+warn_unreachable = true
+strict_equality = true
+strict_optional = true
+enable_error_code = [
+    "redundant-self",
+    "redundant-expr",
+    "possibly-undefined",
+    "truthy-bool",
+    "truthy-iterable",
+    "ignore-without-code",
+    "unused-awaitable",
+    "explicit-override",
+    "mutable-override",
+    "unimported-reveal",
+    "narrowed-type-not-subtype",
+]
+
+# NOTE: allow return `typing.Any` in test fixtures (e.g. mock objects created with `create_autospec`)
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_any_expr = false
+disallow_any_explicit = false
+warn_return_any = false
+
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = [
+    "--cov=src",
+    "--cov-report=term-missing",
+]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+    "if __name__ == .__main__.:",
+    "if t\\.TYPE_CHECKING:",
+    "class .*\\(t\\.Protocol\\):",
+    "@abc\\.abstractmethod",
+    "t\\.assert_never\\(.*\\)",
+]
+show_missing = true

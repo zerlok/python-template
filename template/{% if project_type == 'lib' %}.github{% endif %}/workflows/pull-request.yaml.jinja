@@ -1,0 +1,63 @@
+name: Check On Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: {{ supported_python_versions | to_json }}
+    env:
+      OS: ubuntu
+      PYTHON: ${{ '{{' }} matrix.python-version {{ '}}' }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Python ${{ '{{' }} matrix.python-version {{ '}}' }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ '{{' }} matrix.python-version {{ '}}' }}
+      - name: Install poetry
+        run: pip install poetry
+      - name: Configure poetry
+        run: |
+          poetry config virtualenvs.create true
+          poetry config virtualenvs.in-project false
+      - name: Cache venv
+        id: cache-venv
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/pypoetry
+          key: venv-${{ '{{' }} matrix.python-version {{ '}}' }}-${{ '{{' }} hashFiles('poetry.lock') {{ '}}' }}
+      - name: Show poetry env info
+        run: poetry env info
+      - name: Install project dependencies
+        run: poetry install --all-extras
+      - name: Cache nox
+        id: cache-nox
+        uses: actions/cache@v6
+        with:
+          path: .nox
+          key: nox-${{ '{{' }} matrix.python-version {{ '}}' }}-${{ '{{' }} hashFiles('poetry.lock') {{ '}}' }}-${{ '{{' }} hashFiles('noxfile.py') {{ '}}' }}
+      - name: Run nox sessions (ruff, mypy, pytest)
+        run: poetry run nox -s ruff mypy pytest -P ${{ '{{' }} matrix.python-version {{ '}}' }}
+{%- if codecov %}
+      - name: Upload results to Codecov
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ '{{' }} secrets.CODECOV_TOKEN {{ '}}' }}
+          env_vars: OS,PYTHON
+{%- endif %}
