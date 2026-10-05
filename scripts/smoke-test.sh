@@ -60,10 +60,9 @@ smoke() {
   step "[$project_type] copier copy -> $project"
   (cd "$TEMPLATE_DIR" && "$COPIER" copy --trust --defaults --vcs-ref HEAD \
     --data project_type="$project_type" \
-    --data project_name="$name" \
     --data author_name="Smoke Test" \
     --data author_email="smoke@example.com" \
-    --data github_repository="example/$name" \
+    --data github_url="https://github.com/example/$name.git" \
     ${PYTHON_VERSION:+--data python_version="$PYTHON_VERSION"} \
     . "$project")
 

@@ -22,6 +22,18 @@ Two project types:
 copier copy --trust gh:zerlok/python-template <dest>
 ```
 
+Copier asks for the GitHub repository link first and derives the default project name from it.
+
+To skip typing the author on every project, set the defaults once in Copier's
+[user settings file](https://copier.readthedocs.io/en/stable/settings/) (`~/.config/copier/settings.yml` on Linux),
+for example by creating it from the global git config:
+
+```bash
+mkdir -p ~/.config/copier
+printf 'defaults:\n  author_name: %s\n  author_email: %s\n' \
+  "$(git config --global user.name)" "$(git config --global user.email)" > ~/.config/copier/settings.yml
+```
+
 `--trust` lets Copier run the template's tasks: `git init` (first copy only), `poetry env use 3.X` and
 `poetry install`. The venv is created at `<dest>/.venv`, where PyCharm detects it.
 
@@ -55,10 +67,10 @@ For structural changes between versions (renamed directories and the like), add 
 
 ## PyCharm
 
-The template ships the shareable `.idea` files: the module (`<project_name>.iml`), `modules.xml`, run configurations
-(ruff format, ruff check, mypy, pytest debug, pytest all) and file watchers. It never ships an interpreter path:
-run configurations use the module's interpreter, the module inherits the project interpreter, and PyCharm sets that to
-`.venv` on first open.
+Unless `idea_enabled` is off, the template ships the shareable `.idea` files: the module (`<project_name>.iml`),
+`modules.xml`, run configurations (ruff format, ruff check, mypy, pytest debug, pytest all) and file watchers. It never
+ships an interpreter path: run configurations use the module's interpreter, the module inherits the project interpreter,
+and PyCharm sets that to `.venv` on first open.
 
 The file watchers (ruff format and ruff fix on save) require the File Watchers plugin.
 

@@ -1,5 +1,6 @@
 import nox
 
+{%- if project_type == "lib" %}
 PYTHON_VERSIONS = {{ supported_python_versions | to_json }}
 
 
@@ -20,3 +21,5 @@ def run_mypy(session: nox.Session) -> None:
 def run_pytest(session: nox.Session) -> None:
     session.run("poetry", "install", "--all-extras", external=True)
     session.run("poetry", "run", "pytest", "--cov-report=xml", external=True)
+
+{%- endif %}
